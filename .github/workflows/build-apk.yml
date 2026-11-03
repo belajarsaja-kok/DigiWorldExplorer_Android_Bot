@@ -16,34 +16,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Mengambil source code
       - name: Checkout Source
         uses: actions/checkout@v4
 
-      # 2. Setup Java
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      # 3. Setup Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
           packages: 'platform-tools'
 
-      # 4. Setup Gradle
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.6.0'
 
-      # 5. Build APK
+      # Create local debug keystore
+      - name: Generate Debug Keystore
+        run: |
+          mkdir -p .local
+          keytool -genkeypair \
+            -v \
+            -keystore .local/debug.keystore \
+            -storepass android \
+            -keypass android \
+            -alias androiddebugkey \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      # Build APK
       - name: Build Debug APK
         run: gradle :app:assembleDebug
 
-      # 6. Upload APK
+      # Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
